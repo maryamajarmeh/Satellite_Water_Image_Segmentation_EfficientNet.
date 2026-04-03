@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Water Segmentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('satellite-image.png'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            color: #003366;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: rgba(255,255,255,0.85);
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        h1 {
+            color: #003366;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            text-shadow: 1px 1px 2px #aaa;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #0055aa;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #003366;
+            transform: scale(1.05);
+        }
+
+        .images img {
+            max-width: 100%;
+            border: 3px solid #003366;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        #errorMsg {
+            color: red;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Water Segmentation Demo</h1>
+
+        <input type="file" id="imageInput" accept=".tif,.tiff,.png,.jpg,.jpeg" />
+        <br>
+        <button id="predictBtn">Predict</button>
+
+        <div id="errorMsg"></div>
+        <div class="images" id="resultContainer"></div>
+    </div>
+
+    <script>
+        const predictBtn = document.getElementById("predictBtn");
+        const imageInput = document.getElementById("imageInput");
+        const resultContainer = document.getElementById("resultContainer");
+        const errorMsg = document.getElementById("errorMsg");
+
+        predictBtn.addEventListener("click", async () => {
+            errorMsg.textContent = "";
+            resultContainer.innerHTML = "";
+
+            if (!imageInput.files[0]) {
+                errorMsg.textContent = "❌ Please select an image first!";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", imageInput.files[0]);
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Failed to get mask");
+
+                const blob = await response.blob();
+                const maskUrl = URL.createObjectURL(blob);
+
+                const maskImg = document.createElement("img");
+                maskImg.src = maskUrl;
+                maskImg.alt = "Predicted Mask";
+
+                resultContainer.appendChild(maskImg);
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = "❌ Failed to get mask. Check console for details.";
+            }
+        });
+    </script>
+</body>
+</html>
