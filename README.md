@@ -1,1 +1,1 @@
-# maryamajarmeh-Satellite_Water_Image_Segmentation_EfficientNet.
+# Satellite Water Image Segmentation (EfficientNet)
